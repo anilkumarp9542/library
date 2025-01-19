@@ -86,9 +86,12 @@ class UsersController < ApplicationController
     if user.save
       token = generate_token(user)
       set_auth_cookie(token)
+
+      
+
       render json: { 
         message: "Account created and logged in successfully", 
-        role: user.role ,
+        role: user.role,
         username: user.username
       }, status: :created
     else
@@ -103,17 +106,23 @@ class UsersController < ApplicationController
     if user&.authenticate(params[:password])
       token = generate_token(user)
       set_auth_cookie(token)
-      render json: { message: "Login successful", role: user.role , username: user.username}, status: :ok
+
+     
+
+      render json: { message: "Login successful", role: user.role, username: user.username }, status: :ok
     else
-      render json: { error: "Invalid username or password" }, status: :unauthorized
+      render json: { error: "Invalid email or password" }, status: :unauthorized
     end
   end
 
+
   # User logout
   def logout
+    
     clear_auth_cookie
     render json: { message: "User logged out successfully." }, status: :ok
   end
+
 
   # Authorization for admin actions
   def authorize_admin
@@ -161,5 +170,6 @@ class UsersController < ApplicationController
                 end
     permitted.reject { |_, value| value.blank? } # Ignore empty fields
   end
+
 
 end
