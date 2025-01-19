@@ -2,10 +2,10 @@ package config
 
 import (
 	"golang/pkg/models"
-	"log"
+	"log" // go package for logging errors and messages to console
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	"gorm.io/driver/mysql" //a mysql driver to connect with our MySQL database
+	"gorm.io/gorm"         //gorm is ORM to interact with our database
 )
 
 func Connect() *gorm.DB {
@@ -16,7 +16,7 @@ func Connect() *gorm.DB {
 	}
 
 	// Migrate the schema
-	db.AutoMigrate(&models.Book{}, &models.BorrowBook{})
+	db.AutoMigrate(&models.Book{}, &models.BorrowBook{}) // Book and BorrowBook tables in databases
 
 	return db
 }

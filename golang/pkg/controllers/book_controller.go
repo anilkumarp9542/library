@@ -22,12 +22,14 @@ func NewBookController(db *gorm.DB) *BookController {
 
 // CreateBook - Admin and Librarian
 func (c *BookController) CreateBook(w http.ResponseWriter, r *http.Request) {
-	user, err := utils.ValidateToken(r.Cookies())
+	user, err := utils.ValidateToken(r.Cookies()) // retrieve user data from cookie
+	// checking if no error while retrieving and role is either admin or librarian
 	if err != nil || (user.Role != "Admin" && user.Role != "Librarian") {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
+	// parse book details from JSON
 	var book models.Book
 	if err := json.NewDecoder(r.Body).Decode(&book); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -42,23 +44,28 @@ func (c *BookController) CreateBook(w http.ResponseWriter, r *http.Request) {
 	book.AvailabilityStatus = book.TotalCount > 0
 	book.BorrowedCount = 0
 
+	//insert the data into books table
 	if err := c.DB.Create(&book).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	//sends successful response
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(book)
 }
 
 // UpdateBook - Admin and Librarian
 func (c *BookController) UpdateBook(w http.ResponseWriter, r *http.Request) {
-	user, err := utils.ValidateToken(r.Cookies())
+
+	user, err := utils.ValidateToken(r.Cookies()) // retrieve user data from cookie
+	// checking if no error while retrieving and role is either admin or librarian
 	if err != nil || (user.Role != "Admin" && user.Role != "Librarian") {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
+	// retreive book id from url
 	vars := mux.Vars(r)
 	bookID, err := strconv.ParseUint(vars["id"], 10, 32)
 	if err != nil {
@@ -66,18 +73,20 @@ func (c *BookController) UpdateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//finding the book with retrievd id
 	var book models.Book
 	if err := c.DB.First(&book, bookID).Error; err != nil {
 		http.Error(w, "Book not found", http.StatusNotFound)
 		return
 	}
 
+	//update the book
 	var updateData models.Book
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	//partial updates
 	if updateData.Title != "" {
 		book.Title = updateData.Title
 	}
@@ -99,7 +108,7 @@ func (c *BookController) UpdateBook(w http.ResponseWriter, r *http.Request) {
 		book.TotalCount = updateData.TotalCount
 		book.AvailabilityStatus = book.TotalCount > book.BorrowedCount
 	}
-
+	//save the changes to database
 	if err := c.DB.Save(&book).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -111,12 +120,14 @@ func (c *BookController) UpdateBook(w http.ResponseWriter, r *http.Request) {
 
 // DeleteBook - Admin and Librarian
 func (c *BookController) DeleteBook(w http.ResponseWriter, r *http.Request) {
-	user, err := utils.ValidateToken(r.Cookies())
+	user, err := utils.ValidateToken(r.Cookies()) // retrieve user data from cookie
+	// checking if no error while retrieving and role is either admin or librarian
 	if err != nil || (user.Role != "Admin" && user.Role != "Librarian") {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
+	// retrieve book id from url
 	vars := mux.Vars(r)
 	bookID, err := strconv.ParseUint(vars["id"], 10, 32)
 	if err != nil {
@@ -124,12 +135,14 @@ func (c *BookController) DeleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// finding the book id
 	var book models.Book
 	if err := c.DB.First(&book, bookID).Error; err != nil {
 		http.Error(w, "Book not found", http.StatusNotFound)
 		return
 	}
 
+	// check if there is active borrow records with retrieved id
 	var activeBorrows int64
 	c.DB.Model(&models.BorrowBook{}).Where("book_id = ? AND returned_on IS NULL", bookID).Count(&activeBorrows)
 	if activeBorrows > 0 {
@@ -137,6 +150,7 @@ func (c *BookController) DeleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//delete the book with retrieved id
 	if err := c.DB.Delete(&book).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -146,59 +160,17 @@ func (c *BookController) DeleteBook(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "Book deleted successfully"})
 }
 
-// GetBookbyId - All Users
-func (c *BookController) GetBookbyId(w http.ResponseWriter, r *http.Request) {
-	_, err := utils.ValidateToken(r.Cookies())
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	vars := mux.Vars(r)
-	bookID, err := strconv.ParseUint(vars["id"], 10, 32)
-	if err != nil {
-		http.Error(w, "Invalid book ID", http.StatusBadRequest)
-		return
-	}
-
-	var book models.Book
-	if err := c.DB.First(&book, bookID).Error; err != nil {
-		http.Error(w, "Book not found", http.StatusNotFound)
-		return
-	}
-
-	json.NewEncoder(w).Encode(book)
-}
-
-// GetBookbyTitle - All Users
-func (c *BookController) GetBookbyTitle(w http.ResponseWriter, r *http.Request) {
-	_, err := utils.ValidateToken(r.Cookies())
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	vars := mux.Vars(r)
-	title := vars["title"]
-
-	var book models.Book
-	if err := c.DB.Where("title = ?", title).First(&book).Error; err != nil {
-		http.Error(w, "Book not found", http.StatusNotFound)
-		return
-	}
-
-	json.NewEncoder(w).Encode(book)
-}
-
 // GetAllBooks - All Users with Pagination and Search
 func (c *BookController) GetAllBooks(w http.ResponseWriter, r *http.Request) {
+
+	//checks token is validated or not
 	_, err := utils.ValidateToken(r.Cookies())
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	// Parse query parameters
+	// Parse query parameters from frontend
 	queryParams := r.URL.Query()
 	pageStr := queryParams.Get("page")
 	limitStr := queryParams.Get("limit")
@@ -217,28 +189,28 @@ func (c *BookController) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 
 	offset := (page - 1) * limit
 
-	// Base query
+	// search the book on keyword
 	query := c.DB.Model(&models.Book{})
 	if search != "" {
 		searchPattern := "%" + search + "%"
 		query = query.Where("book_id LIKE ? OR title LIKE ? OR author LIKE ? OR genre LIKE ? ", searchPattern, searchPattern, searchPattern, searchPattern)
 	}
 
-	// Get total count
+	// count the total no of fileterd books for pagination purpose
 	var totalRecords int64
 	if err := query.Count(&totalRecords).Error; err != nil {
 		http.Error(w, "Failed to count books", http.StatusInternalServerError)
 		return
 	}
 
-	// Get paginated books
+	// Get paginated books ordered by book_id
 	var books []models.Book
 	if err := query.Order("book_id").Limit(limit).Offset(offset).Find(&books).Error; err != nil {
 		http.Error(w, "Failed to fetch books", http.StatusInternalServerError)
 		return
 	}
 
-	// Prepare response
+	// Prepare JSON response
 	response := struct {
 		Books []models.Book `json:"books"`
 		Total int64         `json:"total"`
@@ -254,12 +226,14 @@ func (c *BookController) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 
 // BorrowBook - Members Only
 func (c *BookController) BorrowBook(w http.ResponseWriter, r *http.Request) {
+	//checks if token is validated
 	user, err := utils.ValidateToken(r.Cookies())
-	if err != nil || user.Role != "Member" {
+	if err != nil || user.Role != "Member" { //checks if role is Member
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
+	//extracts book id from url
 	vars := mux.Vars(r)
 	bookID, err := strconv.ParseUint(vars["id"], 10, 32)
 	if err != nil {
@@ -267,8 +241,10 @@ func (c *BookController) BorrowBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//start a transaction to ensure data consistency
 	tx := c.DB.Begin()
 
+	//find the book with retrived id and if not found rollback
 	var book models.Book
 	if err := tx.First(&book, bookID).Error; err != nil {
 		tx.Rollback()
@@ -282,6 +258,7 @@ func (c *BookController) BorrowBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//creates a new borrow record
 	borrowRecord := models.BorrowBook{
 		BookID:     uint(bookID),
 		Username:   user.Username,
@@ -290,15 +267,18 @@ func (c *BookController) BorrowBook(w http.ResponseWriter, r *http.Request) {
 		BorrowedOn: time.Now(),
 	}
 
+	//insert borrow record into borrow_books table
 	if err := tx.Create(&borrowRecord).Error; err != nil {
 		tx.Rollback()
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	//updates book availability status
 	book.BorrowedCount++
 	book.AvailabilityStatus = book.BorrowedCount < book.TotalCount
 
+	//save the data and commit the transaction
 	if err := tx.Save(&book).Error; err != nil {
 		tx.Rollback()
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -311,12 +291,13 @@ func (c *BookController) BorrowBook(w http.ResponseWriter, r *http.Request) {
 
 // ReturnBook - Members Only
 func (c *BookController) ReturnBook(w http.ResponseWriter, r *http.Request) {
-	user, err := utils.ValidateToken(r.Cookies())
-	if err != nil || user.Role != "Member" {
+	user, err := utils.ValidateToken(r.Cookies()) // checks if token is validated
+	if err != nil || user.Role != "Member" {      // chekcs if role is Member
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
+	//retirve book id from url
 	vars := mux.Vars(r)
 	bookID, err := strconv.ParseUint(vars["id"], 10, 32)
 	if err != nil {
@@ -324,8 +305,10 @@ func (c *BookController) ReturnBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//start the transaction to maintain data consistency
 	tx := c.DB.Begin()
 
+	//checks for active borrow records for retrived book id
 	var borrowRecord models.BorrowBook
 	if err := tx.Where("book_id = ? AND username = ? AND returned_on IS NULL", bookID, user.Username).First(&borrowRecord).Error; err != nil {
 		tx.Rollback()
@@ -333,6 +316,7 @@ func (c *BookController) ReturnBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//update the returned_on status
 	now := time.Now()
 	borrowRecord.ReturnedOn = &now
 
@@ -349,6 +333,7 @@ func (c *BookController) ReturnBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//update the availability status
 	book.BorrowedCount--
 	book.AvailabilityStatus = book.BorrowedCount < book.TotalCount
 
@@ -358,18 +343,21 @@ func (c *BookController) ReturnBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//commit the transaction
 	tx.Commit()
 	json.NewEncoder(w).Encode(borrowRecord)
 }
 
 // GetBorrowHistory - All Users
 func (c *BookController) GetBorrowHistory(w http.ResponseWriter, r *http.Request) {
+	//validates the token
 	user, err := utils.ValidateToken(r.Cookies())
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
+	//strutc to hold values fecthed from database query
 	var borrowRecords []struct {
 		BookID     uint       `json:"book_id"`
 		Username   string     `json:"username"`
@@ -381,10 +369,11 @@ func (c *BookController) GetBorrowHistory(w http.ResponseWriter, r *http.Request
 		Author     string     `json:"author"`
 	}
 
+	//query to retrive borrow records from borrow_books table, username,email,mobile comes from validate token
 	query := c.DB.Table("borrow_books").
 		Select("borrow_books.book_id, borrow_books.username, borrow_books.email, borrow_books.mobile, borrow_books.borrowed_on, borrow_books.returned_on, books.title AS book_title, books.author").
 		Joins("JOIN books ON borrow_books.book_id = books.book_id").
-		Order("borrow_books.borrowed_on DESC") // Order by borrowed_on in descending order
+		Order("borrow_books.created_at DESC") // Order by borrowed_on in descending order
 
 	// If the user is a Member, filter borrow history to only show their records
 	if user.Role == "Member" {

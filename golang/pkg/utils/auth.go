@@ -35,21 +35,20 @@ func ValidateToken(cookies []*http.Cookie) (*User, error) {
 		return nil, err
 	}
 
-	// Attach the cookie to the request
-	req.AddCookie(&http.Cookie{Name: "jwt", Value: jwtToken})
+	req.AddCookie(&http.Cookie{Name: "jwt", Value: jwtToken}) // add the extracted cookie to request
 
-	resp, err := client.Do(req)
+	resp, err := client.Do(req) // the request is sent to authentication service
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("unauthorized")
+		return nil, errors.New("unauthorized") // if response recieved is not 200 , unauthorized
 	}
 
 	var user User
-	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil { // if authorized decode the json data into above USer struct
 		return nil, err
 	}
 

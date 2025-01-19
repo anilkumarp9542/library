@@ -119,18 +119,13 @@ const App = () => {
   };
 
   const RedirectIfAuthenticated = ({ children }) => {
-    return auth.isAuthenticated ? (
-      <Navigate to={auth.role === 'Admin' ? '/admin' : auth.role === 'Librarian' ? '/librarian' : '/member'} />
-    ) : (
-      children
-    );
+    return auth.isAuthenticated ?(<Navigate to={auth.role === 'Admin' ? '/admin' : auth.role === 'Librarian' ? '/librarian' : '/member'} />) : (children);
   };
 
   return (
     <Router>
       <ConditionalHeader />
       <Routes>
-        {/* Redirect to dashboard if already authenticated */}
         <Route
           path="/"
           element={

@@ -99,9 +99,7 @@ const BorrowhistoryPage = () => {
                   <TableCell>{record.author}</TableCell>
                   <TableCell>{new Date(record.borrowed_on).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    {record.returned_on
-                      ? new Date(record.returned_on).toLocaleDateString()
-                      : 'Not Returned'}
+                    {record.returned_on? new Date(record.returned_on).toLocaleDateString(): 'Not Returned'}
                   </TableCell>
                 </TableRow>
               ))}

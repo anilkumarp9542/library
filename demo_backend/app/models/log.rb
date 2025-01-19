@@ -1,6 +1,6 @@
 class Log
   include Mongoid::Document
-  include Mongoid::Timestamps  # Adds `created_at` and `updated_at` fields automatically
+  include Mongoid::Timestamps  
 
   field :request_id, type: String
   field :action_type, type: String   # login, signup, logout
@@ -9,7 +9,7 @@ class Log
   field :response_body, type: String
   field :request_time, type: DateTime
   field :response_time, type: DateTime
-  field :username, type: String   # New field for tracking user actions
-  field :email, type: String      # New field for tracking user actions
+  field :username, type: String   
+  field :email, type: String      
   field :mobile, type: String
 end

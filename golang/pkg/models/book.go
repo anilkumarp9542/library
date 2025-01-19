@@ -30,7 +30,8 @@ type BorrowBook struct {
 	ReturnedOn *time.Time `gorm:"type:date" json:"returned_on,omitempty"`
 }
 
-// UnmarshalJSON parses the date in dd/mm/yyyy format from the frontend and converts it to time.Time
+// JSON Serialization and Deserialization
+// frontend gives dd/mm/yyyy format now we unmarshall and convert that format to time.Time object to backend
 func (b *Book) UnmarshalJSON(data []byte) error {
 	type Alias Book
 	aux := &struct {
@@ -56,7 +57,7 @@ func (b *Book) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON formats the date to dd/mm/yyyy for JSON responses
+// backend gives time.Time object now we marshall and convert it into dd/mm/yyyy format and give to frontend
 func (b Book) MarshalJSON() ([]byte, error) {
 	type Alias Book
 	return json.Marshal(&struct {

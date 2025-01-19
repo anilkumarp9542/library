@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  #before_action :authorize_user, only: [:logout]
+
   before_action :authorize_admin, only: [:create_librarian, :destroy_librarian, :update_librarian, :view_librarian]
 
   # Validate token and return user info for GoLang service
@@ -25,15 +25,12 @@ class UsersController < ApplicationController
 
   # Admin can create a librarian
   def create_librarian
-    #logger.debug "Received Parameters: #{params.inspect}" # Debug log
-
     librarian = User.new(user_params)
     librarian.role = 'Librarian'
 
     if librarian.save
       render json: { message: "Librarian created successfully", user: librarian }, status: :created
     else
-      #logger.debug "Errors: #{librarian.errors.full_messages}" # Debug errors
       render json: { errors: librarian.errors.full_messages }, status: :unprocessable_entity
     end
   end
@@ -50,7 +47,7 @@ class UsersController < ApplicationController
     end
   end
 
-  # Admin can update a librarian
+  # Admin can update a librarian (partial updtaes are also allowed)
   def update_librarian
     librarian = User.find_by(id: params[:id], role: 'Librarian')
 
@@ -86,9 +83,6 @@ class UsersController < ApplicationController
     if user.save
       token = generate_token(user)
       set_auth_cookie(token)
-
-      
-
       render json: { 
         message: "Account created and logged in successfully", 
         role: user.role,
@@ -106,9 +100,6 @@ class UsersController < ApplicationController
     if user&.authenticate(params[:password])
       token = generate_token(user)
       set_auth_cookie(token)
-
-     
-
       render json: { message: "Login successful", role: user.role, username: user.username }, status: :ok
     else
       render json: { error: "Invalid email or password" }, status: :unauthorized
@@ -154,11 +145,7 @@ class UsersController < ApplicationController
 
   # Parameter handling for user creation and updates
   def user_params
-    # if action_name == 'update_librarian'
-    #   params.permit(:username, :email, :mobile, :password, :password_confirmation)
-    # else
       params.require(:user).permit(:username, :email, :mobile, :password, :password_confirmation)
-    #end
   end
 
   # Parameters for partial updates (includes removing empty fields)
@@ -170,6 +157,4 @@ class UsersController < ApplicationController
                 end
     permitted.reject { |_, value| value.blank? } # Ignore empty fields
   end
-
-
 end

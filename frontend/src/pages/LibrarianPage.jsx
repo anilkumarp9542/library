@@ -16,8 +16,7 @@ import {
 
 import { getAllBooks, logout } from '../services/api';
 
-const LibrarianPage = ({ onLogout }) => {
-  const navigate = useNavigate();
+const LibrarianPage = () => {
   const [books, setBooks] = useState([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,16 +52,6 @@ const LibrarianPage = ({ onLogout }) => {
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);
     fetchBooks(nextPage, recordsPerPage, searchQuery);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      onLogout();
-      navigate('/');
-    } catch (error) {
-      alert('Logout failed');
-    }
   };
 
   return (

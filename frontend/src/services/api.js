@@ -36,8 +36,7 @@ export const deleteLibrarian = (id) => railsApi.delete(`/users/${id}/destroy_lib
 export const getLibrarians = async () => {
   try {
     const response = await railsApi.get('/users/view_librarian');
-    console.log(response.data) // Update this endpoint if needed
-    return response.data; // This should return { librarians: [...] }
+    return response.data;
   } catch (error) {
     console.error('Error fetching librarians:', error);
     throw error;
@@ -48,8 +47,6 @@ export const getLibrarians = async () => {
 export const createBook = (data) => golangApi.post('/books/createBook', data);
 export const updateBook = (id, data) => golangApi.put(`/books/updateBook/${id}`, data);
 export const deleteBook = (id) => golangApi.delete(`/books/deleteBook/${id}`);
-export const getBookById = (id) => golangApi.get(`/books/id/${id}`);
-export const getBookByTitle = (title) => golangApi.get(`/books/title/${title}`);
 export const getAllBooks = ({ page = 1, limit = 10, search = '' } = {}) =>
   golangApi.get('/books', {
     params: { page, limit, search },
