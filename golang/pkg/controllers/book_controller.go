@@ -378,6 +378,8 @@ func (c *BookController) GetBorrowHistory(w http.ResponseWriter, r *http.Request
 	// If the user is a Member, filter borrow history to only show their records
 	if user.Role == "Member" {
 		query = query.Where("borrow_books.username = ?", user.Username)
+		query = query.Where("borrow_books.email = ?", user.Email)
+		query = query.Where("borrow_books.mobile = ?", user.Mobile)
 	}
 
 	if err := query.Find(&borrowRecords).Error; err != nil {
