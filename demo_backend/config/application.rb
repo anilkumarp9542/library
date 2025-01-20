@@ -15,6 +15,9 @@ module DemoBackend
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w(assets tasks))
+    config.time_zone = 'Asia/Kolkata'  # Replace with your timezone
+    config.active_record.default_timezone = :local  # Store timestamps in local time in the DB
+
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -43,20 +46,5 @@ module DemoBackend
                  credentials: true
       end
     end
-
-    # Add Rack::Cors middleware for handling CORS
-    # config.middleware.insert_before 0, Rack::Cors do
-    #   allow do
-    #     if Rails.env.production?
-    #       origins 'http://localhost:5173' # Replace with your production frontend URL
-    #     else
-    #       origins 'http://localhost:5173' # Replace with your development frontend URL
-    #     end
-    #     resource '*',
-    #              headers: :any,
-    #              methods: [:get, :post, :put, :patch, :delete, :options, :head],
-    #              expose: ['Authorization']
-    #   end
-    # end
   end
 end
