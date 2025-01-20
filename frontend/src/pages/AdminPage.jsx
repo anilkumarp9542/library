@@ -12,11 +12,9 @@ import {
   TableContainer,
   Paper,
 } from '@mui/material';
-// import { useNavigate } from 'react-router-dom';
 import { getAllBooks} from '../services/api';
 
 const AdminPage = () => {
-  // const navigate = useNavigate();
   const [books, setBooks] = useState([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');

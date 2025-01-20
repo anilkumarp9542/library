@@ -17,8 +17,9 @@ import {
   Typography,
 } from '@mui/material';
 import { getLibrarians, updateLibrarian, deleteLibrarian } from '../services/api';
+import CreateLibrarian from '../components/CreateLibrarian';
 
-const UpdateDeleteLibrarian = () => {
+const LibrarianManagement = () => {
   const [librarians, setLibrarians] = useState([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,10 +38,10 @@ const UpdateDeleteLibrarian = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    fetchLibrarians(1, recordsPerPage, searchQuery);
+    fetchLibrarians(1, recordsPerPage, searchQuery, false);
   }, [searchQuery]);
 
-  const fetchLibrarians = async (page, limit, search = '') => {
+  const fetchLibrarians = async (page, limit, search = '', append = false) => {
     try {
       const response = await getLibrarians();
       const filteredLibrarians = response.librarians.filter((librarian) =>
@@ -48,11 +49,21 @@ const UpdateDeleteLibrarian = () => {
           value.toString().toLowerCase().includes(search.toLowerCase())
         )
       );
-      const paginatedLibrarians = filteredLibrarians.slice((page - 1) * limit, page * limit);
-      if (page === 1) {
-        setLibrarians(paginatedLibrarians);
+      let allFetchedLibrarians = [];
+      for (let i = 1; i <= page; i++) {
+        const res = await getLibrarians();
+        const filteredRes = res.librarians.filter((librarian) =>
+          Object.values(librarian).some((value) =>
+            value.toString().toLowerCase().includes(search.toLowerCase())
+          )
+        );
+        allFetchedLibrarians = [...allFetchedLibrarians, ...filteredRes.slice((i - 1) * limit, i * limit)];
+      }
+      
+      if (append) {
+        setLibrarians((prevLibrarians) => [...prevLibrarians, ...allFetchedLibrarians]);
       } else {
-        setLibrarians((prevLibrarians) => [...prevLibrarians, ...paginatedLibrarians]);
+        setLibrarians(allFetchedLibrarians);
       }
       setTotalRecords(filteredLibrarians.length);
     } catch (error) {
@@ -76,7 +87,7 @@ const UpdateDeleteLibrarian = () => {
     try {
       await deleteLibrarian(librarianId);
       alert('Librarian deleted successfully!');
-      fetchLibrarians(1, recordsPerPage, searchQuery); // Refresh librarians
+      fetchLibrarians(currentPage, recordsPerPage, searchQuery, false); // Refresh librarians list
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to delete librarian');
     }
@@ -91,7 +102,7 @@ const UpdateDeleteLibrarian = () => {
       await updateLibrarian(formData.id, formData);
       alert('Librarian updated successfully!');
       setIsUpdateOpen(false);
-      fetchLibrarians(1, recordsPerPage, searchQuery); // Refresh librarians
+      fetchLibrarians(currentPage, recordsPerPage, searchQuery, false); // Refresh librarians list
     } catch (error) {
       const errorResponse = error.response?.data?.errors || 'Failed to update librarian';
       setErrorMessage(Array.isArray(errorResponse) ? errorResponse.join(', ') : errorResponse);
@@ -101,9 +112,8 @@ const UpdateDeleteLibrarian = () => {
   };
 
   const handleViewMore = () => {
-    const nextPage = currentPage + 1;
-    setCurrentPage(nextPage);
-    fetchLibrarians(nextPage, recordsPerPage, searchQuery);
+    setCurrentPage((prev) => prev + 1);
+    fetchLibrarians(currentPage + 1, recordsPerPage, searchQuery, true); // Append new data
   };
 
   const handleSearch = (e) => {
@@ -118,9 +128,14 @@ const UpdateDeleteLibrarian = () => {
 
   return (
     <Box p={4}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
       <Typography variant="h4" textAlign="center">
-        Update/Delete Librarian
+        Librarian Management
       </Typography>
+
+      {/* Create Librarian Component */}
+      <CreateLibrarian fetchLibrarians={() => fetchLibrarians(1, recordsPerPage, searchQuery, false)} />
+        </Box>
 
       <Box mt={4}>
         <TextField
@@ -153,12 +168,14 @@ const UpdateDeleteLibrarian = () => {
                   <TableCell>{librarian.email}</TableCell>
                   <TableCell>{librarian.mobile}</TableCell>
                   <TableCell>
+                    <Box display="flex" gap={1}>
                     <Button variant="outlined" onClick={() => handleUpdateClick(librarian)}>
                       Update
                     </Button>
                     <Button variant="outlined" color="error" onClick={() => handleDeleteClick(librarian.id)}>
                       Delete
                     </Button>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
@@ -175,45 +192,17 @@ const UpdateDeleteLibrarian = () => {
           </Table>
         </TableContainer>
 
+        {/* Update Librarian Dialog */}
         <Dialog open={isUpdateOpen} onClose={() => setIsUpdateOpen(false)}>
           <DialogTitle>Update Librarian</DialogTitle>
           <DialogContent>
             {errorMessage && (
               <p style={{ color: 'red', fontSize: '14px', marginBottom: '16px' }}>{errorMessage}</p>
             )}
-            <TextField
-              label="Librarian ID"
-              name="id"
-              fullWidth
-              margin="dense"
-              value={formData.id}
-              onChange={handleChange}
-              disabled
-            />
-            <TextField
-              label="Username"
-              name="username"
-              fullWidth
-              margin="dense"
-              value={formData.username}
-              onChange={handleChange}
-            />
-            <TextField
-              label="Email"
-              name="email"
-              fullWidth
-              margin="dense"
-              value={formData.email}
-              onChange={handleChange}
-            />
-            <TextField
-              label="Mobile"
-              name="mobile"
-              fullWidth
-              margin="dense"
-              value={formData.mobile}
-              onChange={handleChange}
-            />
+            <TextField label="Librarian ID" name="id" fullWidth margin="dense" value={formData.id} disabled />
+            <TextField label="Username" name="username" fullWidth margin="dense" value={formData.username} onChange={handleChange} />
+            <TextField label="Email" name="email" fullWidth margin="dense" value={formData.email} onChange={handleChange} />
+            <TextField label="Mobile" name="mobile" fullWidth margin="dense" value={formData.mobile} onChange={handleChange} />
             <TextField
               label="Password"
               name="password"
@@ -245,4 +234,4 @@ const UpdateDeleteLibrarian = () => {
   );
 };
 
-export default UpdateDeleteLibrarian;
+export default LibrarianManagement;

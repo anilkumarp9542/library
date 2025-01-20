@@ -17,8 +17,9 @@ import {
   Typography,
 } from '@mui/material';
 import { getAllBooks, updateBook, deleteBook } from '../services/api';
+import CreateBook from '../components/CreateBook';
 
-const UpdateDeleteBook = () => {
+const BookManagement = () => {
   const [books, setBooks] = useState([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,16 +36,22 @@ const UpdateDeleteBook = () => {
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
 
   useEffect(() => {
-    fetchBooks(1, recordsPerPage, searchQuery);
+    fetchBooks(currentPage, recordsPerPage, searchQuery, false);
   }, [searchQuery]);
 
-  const fetchBooks = async (page, limit, search = '') => {
+  // Function to fetch books
+  const fetchBooks = async (page, limit, search = '', append = false) => {
     try {
       const response = await getAllBooks({ page, limit, search });
-      if (page === 1) {
-        setBooks(response.data.books);
-      } else {
+      if (append) {
         setBooks((prevBooks) => [...prevBooks, ...response.data.books]);
+      } else {
+        let allFetchedBooks = [];
+        for (let i = 1; i <= page; i++) {
+          const res = await getAllBooks({ page: i, limit, search });
+          allFetchedBooks = [...allFetchedBooks, ...res.data.books];
+        }
+        setBooks(allFetchedBooks);
       }
       setTotalRecords(response.data.total);
     } catch (error) {
@@ -52,6 +59,7 @@ const UpdateDeleteBook = () => {
     }
   };
 
+  // Handle updating a book (open dialog)
   const handleUpdateClick = (book) => {
     setFormData({
       book_id: book.book_id,
@@ -64,16 +72,20 @@ const UpdateDeleteBook = () => {
     setIsUpdateOpen(true);
   };
 
+  // Handle book deletion
   const handleDeleteClick = async (bookId) => {
     try {
       await deleteBook(bookId);
       alert('Book deleted successfully!');
-      fetchBooks(1, recordsPerPage, searchQuery); // Refresh books
+      setTotalRecords((prev) => prev - 1);
+      setCurrentPage(1);
+      fetchBooks(currentPage, recordsPerPage, searchQuery, false); // Refresh books
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to delete book');
     }
   };
 
+  // Handle updating book submission
   const handleUpdateSubmit = async () => {
     try {
       const updatedData = {
@@ -88,23 +100,27 @@ const UpdateDeleteBook = () => {
       await updateBook(updatedData.book_id, updatedData);
       alert('Book updated successfully!');
       setIsUpdateOpen(false);
-      fetchBooks(1, recordsPerPage, searchQuery); // Refresh books
+      fetchBooks(currentPage, recordsPerPage, searchQuery, false); // Refresh books
+      console.log("Hello")
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to update book');
     }
   };
 
+  // Handle viewing more books (pagination)
   const handleViewMore = () => {
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);
-    fetchBooks(nextPage, recordsPerPage, searchQuery);
+    fetchBooks(nextPage, recordsPerPage, searchQuery, true);
   };
 
+  // Handle search input
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1);
   };
 
+  // Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -112,9 +128,10 @@ const UpdateDeleteBook = () => {
 
   return (
     <Box p={4}>
-      <Typography variant="h4" textAlign="center">
-        Update/Delete Books
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Typography variant="h4">Book Management</Typography>
+        <CreateBook fetchBooks={() => fetchBooks(1, recordsPerPage, searchQuery, false)} />
+      </Box>
 
       <Box mt={4}>
         <TextField
@@ -151,12 +168,14 @@ const UpdateDeleteBook = () => {
                   <TableCell>{book.total_count}</TableCell>
                   <TableCell>{book.genre}</TableCell>
                   <TableCell>
-                    <Button variant="outlined" onClick={() => handleUpdateClick(book)}>
-                      Update
-                    </Button>
-                    <Button variant="outlined" color="error" onClick={() => handleDeleteClick(book.book_id)}>
-                      Delete
-                    </Button>
+                    <Box display="flex" gap={1}>
+                      <Button variant="outlined" onClick={() => handleUpdateClick(book)}>
+                        Update
+                      </Button>
+                      <Button variant="outlined" color="error" onClick={() => handleDeleteClick(book.book_id)}>
+                        Delete
+                      </Button>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
@@ -173,6 +192,7 @@ const UpdateDeleteBook = () => {
           </Table>
         </TableContainer>
 
+        {/* Update Book Dialog */}
         <Dialog open={isUpdateOpen} onClose={() => setIsUpdateOpen(false)}>
           <DialogTitle>Update Book</DialogTitle>
           <DialogContent>
@@ -238,4 +258,4 @@ const UpdateDeleteBook = () => {
   );
 };
 
-export default UpdateDeleteBook;
+export default BookManagement;

@@ -24,17 +24,14 @@ const Header = ({ role, username, onLogout }) => {
 
   const adminMenuItems = [
     { label: 'Home', action: () => navigate('/admin') },
-    { label: 'Create Librarian', action: () => navigate('/admin/create-librarian') },
-    { label: 'Update/Delete Librarian', action: () => navigate('/admin/update-delete-librarian') },
-    { label: 'Create Book', action: () => navigate('/admin/create-book') },
-    { label: 'Update/Delete Book', action: () => navigate('/admin/update-delete-book') },
+    { label: 'Librarian Management', action: () => navigate('/admin/create-update-delete-librarian') },
+    { label: 'Book Management', action: () => navigate('/admin/create-update-delete-book') },
     { label: 'View Borrow History', action: () => navigate('/admin/borrow-history') },
   ];
 
   const librarianMenuItems = [
     { label: 'Home', action: () => navigate('/librarian') },
-    { label: 'Create Book', action: () => navigate('/librarian/create-book') },
-    { label: 'Update/Delete Book', action: () => navigate('/librarian/update-delete-book') },
+    { label: 'Book Management', action: () => navigate('/librarian/create-update-delete-book') },
     { label: 'View Borrow History', action: () => navigate('/librarian/borrow-history') },
   ];
 

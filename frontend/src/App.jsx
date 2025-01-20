@@ -8,19 +8,15 @@ import AdminPage from './pages/AdminPage';
 import LibrarianPage from './pages/LibrarianPage';
 import MemberPage from './pages/MemberPage';
 import Header from './components/Header';
-import CreatelibrarianPage from './pages/CreatelibrarianPage';
-import CreatebookPage from './pages/CreatebookPage';
 import ReturnbookPage from './pages/ReturnbookPage';
 import BorrowhistoryPage from './pages/BorrowhistoryPage';
-import UpdateDeleteBook from './pages/UpdateDeleteBook';
-import UpdateDeleteLibrarian from './pages/UpdateDeleteLibrarian';
+import BookManagement from './pages/BookManagement';
+import LibrarianManagement from './pages/LibrarianManagement';
 
 const App = () => {
   const [auth, setAuth] = useState(() => {
     const savedAuth = localStorage.getItem('auth');
-    return savedAuth
-      ? JSON.parse(savedAuth)
-      : { isAuthenticated: false, role: null, username: '', loginStatus: false };
+    return savedAuth ? JSON.parse(savedAuth) : { isAuthenticated: false, role: null, username: '', loginStatus: false };
   });
 
   const [loading, setLoading] = useState(false);
@@ -169,34 +165,18 @@ const App = () => {
               }
             />
             <Route
-              path="/admin/create-librarian"
+              path="/admin/create-update-delete-librarian"
               element={
                 <ProtectedRoute>
-                  <CreatelibrarianPage />
+                  <LibrarianManagement />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/admin/update-delete-librarian"
+              path="/admin/create-update-delete-book"
               element={
                 <ProtectedRoute>
-                  <UpdateDeleteLibrarian />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/create-book"
-              element={
-                <ProtectedRoute>
-                  <CreatebookPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/update-delete-book"
-              element={
-                <ProtectedRoute>
-                  <UpdateDeleteBook />
+                  <BookManagement />
                 </ProtectedRoute>
               }
             />
@@ -209,18 +189,10 @@ const App = () => {
               }
             />
             <Route
-              path="/librarian/create-book"
+              path="/librarian/create-update-delete-book"
               element={
                 <ProtectedRoute>
-                  <CreatebookPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/librarian/update-delete-book"
-              element={
-                <ProtectedRoute>
-                  <UpdateDeleteBook />
+                  <BookManagement />
                 </ProtectedRoute>
               }
             />
