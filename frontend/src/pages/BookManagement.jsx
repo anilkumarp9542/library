@@ -65,27 +65,25 @@ const BookManagement = () => {
       book_id: book.book_id,
       title: book.title,
       author: book.author,
-      publication_date: book.publication_date.split('/').reverse().join('-'),
+      publication_date: book.publication_date,
       total_count: book.total_count,
       genre: book.genre,
     });
     setIsUpdateOpen(true);
   };
 
-  // Handle book deletion
   const handleDeleteClick = async (bookId) => {
     try {
       await deleteBook(bookId);
       alert('Book deleted successfully!');
+  
+      setBooks((prevBooks) => prevBooks.filter((book) => book.book_id !== bookId));
       setTotalRecords((prev) => prev - 1);
-      setCurrentPage(1);
-      fetchBooks(currentPage, recordsPerPage, searchQuery, false); // Refresh books
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to delete book');
     }
   };
 
-  // Handle updating book submission
   const handleUpdateSubmit = async () => {
     try {
       const updatedData = {
@@ -96,16 +94,27 @@ const BookManagement = () => {
         publication_date: formData.publication_date.split('-').reverse().join('/'), // Convert `yyyy-mm-dd` to `dd/mm/yyyy`
         total_count: parseInt(formData.total_count, 10),
       };
-
+  
       await updateBook(updatedData.book_id, updatedData);
       alert('Book updated successfully!');
       setIsUpdateOpen(false);
-      fetchBooks(currentPage, recordsPerPage, searchQuery, false); // Refresh books
-      console.log("Hello")
+  
+      setBooks((prevBooks) =>
+        prevBooks.map((book) =>
+          book.book_id === updatedData.book_id ? { ...book, ...updatedData } : book
+        )
+      );
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to update book');
     }
   };
+  
+  const handleCreateSuccess = () => {
+    setCurrentPage(1);
+    fetchBooks(1, recordsPerPage, searchQuery, false);
+  };
+
+  
 
   // Handle viewing more books (pagination)
   const handleViewMore = () => {
@@ -130,7 +139,7 @@ const BookManagement = () => {
     <Box p={4}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4">Book Management</Typography>
-        <CreateBook fetchBooks={() => fetchBooks(1, recordsPerPage, searchQuery, false)} />
+        <CreateBook fetchBooks={handleCreateSuccess} />
       </Box>
 
       <Box mt={4}>

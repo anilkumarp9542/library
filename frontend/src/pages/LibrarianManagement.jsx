@@ -38,10 +38,10 @@ const LibrarianManagement = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    fetchLibrarians(1, recordsPerPage, searchQuery, false);
+    fetchLibrarians(currentPage, recordsPerPage, searchQuery);
   }, [searchQuery]);
 
-  const fetchLibrarians = async (page, limit, search = '', append = false) => {
+  const fetchLibrarians = async (page, limit, search = '') => {
     try {
       const response = await getLibrarians();
       const filteredLibrarians = response.librarians.filter((librarian) =>
@@ -49,22 +49,9 @@ const LibrarianManagement = () => {
           value.toString().toLowerCase().includes(search.toLowerCase())
         )
       );
-      let allFetchedLibrarians = [];
-      for (let i = 1; i <= page; i++) {
-        const res = await getLibrarians();
-        const filteredRes = res.librarians.filter((librarian) =>
-          Object.values(librarian).some((value) =>
-            value.toString().toLowerCase().includes(search.toLowerCase())
-          )
-        );
-        allFetchedLibrarians = [...allFetchedLibrarians, ...filteredRes.slice((i - 1) * limit, i * limit)];
-      }
-      
-      if (append) {
-        setLibrarians((prevLibrarians) => [...prevLibrarians, ...allFetchedLibrarians]);
-      } else {
-        setLibrarians(allFetchedLibrarians);
-      }
+
+      const paginatedLibrarians = filteredLibrarians.slice(0, page * limit);
+      setLibrarians(paginatedLibrarians);
       setTotalRecords(filteredLibrarians.length);
     } catch (error) {
       console.error('Error fetching librarians:', error);
@@ -87,7 +74,8 @@ const LibrarianManagement = () => {
     try {
       await deleteLibrarian(librarianId);
       alert('Librarian deleted successfully!');
-      fetchLibrarians(currentPage, recordsPerPage, searchQuery, false); // Refresh librarians list
+      setLibrarians((prev) => prev.filter((librarian) => librarian.id !== librarianId));
+      setTotalRecords((prev) => prev - 1);
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to delete librarian');
     }
@@ -102,7 +90,11 @@ const LibrarianManagement = () => {
       await updateLibrarian(formData.id, formData);
       alert('Librarian updated successfully!');
       setIsUpdateOpen(false);
-      fetchLibrarians(currentPage, recordsPerPage, searchQuery, false); // Refresh librarians list
+      setLibrarians((prev) =>
+        prev.map((librarian) =>
+          librarian.id === formData.id ? { ...librarian, ...formData } : librarian
+        )
+      );
     } catch (error) {
       const errorResponse = error.response?.data?.errors || 'Failed to update librarian';
       setErrorMessage(Array.isArray(errorResponse) ? errorResponse.join(', ') : errorResponse);
@@ -113,7 +105,7 @@ const LibrarianManagement = () => {
 
   const handleViewMore = () => {
     setCurrentPage((prev) => prev + 1);
-    fetchLibrarians(currentPage + 1, recordsPerPage, searchQuery, true); // Append new data
+    fetchLibrarians(currentPage + 1, recordsPerPage, searchQuery);
   };
 
   const handleSearch = (e) => {
@@ -129,13 +121,11 @@ const LibrarianManagement = () => {
   return (
     <Box p={4}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-      <Typography variant="h4" textAlign="center">
-        Librarian Management
-      </Typography>
-
-      {/* Create Librarian Component */}
-      <CreateLibrarian fetchLibrarians={() => fetchLibrarians(1, recordsPerPage, searchQuery, false)} />
-        </Box>
+        <Typography variant="h4" textAlign="center">
+          Librarian Management
+        </Typography>
+        <CreateLibrarian fetchLibrarians={() => fetchLibrarians(currentPage, recordsPerPage, searchQuery)} />
+      </Box>
 
       <Box mt={4}>
         <TextField
@@ -144,7 +134,7 @@ const LibrarianManagement = () => {
           variant="outlined"
           value={searchQuery}
           onChange={handleSearch}
-          placeholder="Search by ID, Username, Email, Mobile"
+          placeholder="Search by Username, Email, Mobile"
         />
       </Box>
 
@@ -169,12 +159,12 @@ const LibrarianManagement = () => {
                   <TableCell>{librarian.mobile}</TableCell>
                   <TableCell>
                     <Box display="flex" gap={1}>
-                    <Button variant="outlined" onClick={() => handleUpdateClick(librarian)}>
-                      Update
-                    </Button>
-                    <Button variant="outlined" color="error" onClick={() => handleDeleteClick(librarian.id)}>
-                      Delete
-                    </Button>
+                      <Button variant="outlined" onClick={() => handleUpdateClick(librarian)}>
+                        Update
+                      </Button>
+                      <Button variant="outlined" color="error" onClick={() => handleDeleteClick(librarian.id)}>
+                        Delete
+                      </Button>
                     </Box>
                   </TableCell>
                 </TableRow>

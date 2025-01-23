@@ -6,6 +6,22 @@ development:
         - localhost:27017
       options:
         server_selection_timeout: 5
-  options:
-    raise_not_found_error: false
-    
+
+test:
+  clients:
+    default:
+      database: demo_backend_test
+      hosts:
+        - localhost:27017
+      options:
+        server_selection_timeout: 5
+
+production:
+  clients:
+    default:
+      database: demo_backend_production
+      hosts:
+        - localhost:27017
+      options:
+        user: <%= ENV['MONGO_USER'] %>
+        password: <%= ENV['MONGO_PASSWORD'] %>

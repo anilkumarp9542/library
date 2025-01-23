@@ -148,13 +148,9 @@ class UsersController < ApplicationController
       params.require(:user).permit(:username, :email, :mobile, :password, :password_confirmation)
   end
 
-  # Parameters for partial updates (includes removing empty fields)
+  # Parameters for partial updates (includes removing empty fields) (Nested and not nested parameters)
   def update_params
-    permitted = if params[:user]
-                  params.require(:user).permit(:username, :email, :mobile, :password, :password_confirmation)
-                else
-                  params.permit(:username, :email, :mobile, :password, :password_confirmation)
-                end
-    permitted.reject { |_, value| value.blank? } # Ignore empty fields
+      permitted = params.require(:user).permit(:username, :email, :mobile, :password, :password_confirmation)
+      permitted.reject { |_, value| value.blank? } # Ignore empty fields
   end
 end

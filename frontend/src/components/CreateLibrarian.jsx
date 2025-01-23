@@ -68,9 +68,9 @@ const CreateLibrarian = ({ fetchLibrarians }) => {
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>Create New Librarian</DialogTitle>
         <DialogContent>
-          {errorMessage && (
+          {/* {errorMessage && (
             <p style={{ color: 'red', fontSize: '14px', marginBottom: '16px' }}>{errorMessage}</p>
-          )}
+          )} */}
           <form onSubmit={handleSubmit}>
             <TextField
               label="Username"

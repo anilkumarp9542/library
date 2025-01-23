@@ -68,11 +68,7 @@ const SignupPage = ({ setAuth }) => {
           <Typography variant="h4" align="center" gutterBottom>
             Signup
           </Typography>
-          {error && (
-            <Alert severity="error" sx={{ marginBottom: 2 }}>
-              {error}
-            </Alert>
-          )}
+         
           <Stack spacing={2}>
             <TextField
               label="Username"

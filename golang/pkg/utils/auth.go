@@ -14,7 +14,7 @@ type User struct {
 	Mobile   string `json:"mobile"`
 }
 
-func ValidateToken(cookies []*http.Cookie) (*User, error) {
+func ValidateToken(cookies []*http.Cookie) (*User, error) { //pointers to http.Cookie and User structs
 	var jwtToken string
 
 	// Find the `jwt` cookie
@@ -29,7 +29,7 @@ func ValidateToken(cookies []*http.Cookie) (*User, error) {
 		return nil, errors.New("unauthorized: no valid jwt cookie found")
 	}
 
-	client := &http.Client{}
+	client := &http.Client{} //creates an instance of http client for making http requests
 	req, err := http.NewRequest("GET", "http://localhost:3000/users/validate_token", nil)
 	if err != nil {
 		return nil, err

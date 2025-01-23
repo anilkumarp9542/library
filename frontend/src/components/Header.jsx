@@ -106,16 +106,16 @@ const Header = ({ role, username, onLogout }) => {
                 button
                 onClick={() => handleMenuItemClick(item.action)}
                 sx={{
-                  cursor: 'pointer', // Always show pointer
+                  cursor: 'pointer', 
                   '&:hover': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.1)', // Optional hover effect
+                    backgroundColor: 'rgba(0, 0, 0, 0.1)', 
                   },
                 }} // Change cursor to pointer
               >
                 <ListItemText primary={item.label} />
               </ListItem>
             ))}
-          </List>
+        </List>
         </Box>
       </Drawer>
     </>

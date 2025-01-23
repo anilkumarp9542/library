@@ -4,7 +4,7 @@ class Log
 
   field :request_id, type: String
   field :action_type, type: String   # login, signup, logout
-  field :ip_address, type: String
+  # field :ip_address, type: String
   field :request_body, type: String
   field :response_body, type: String
   field :request_time, type: DateTime

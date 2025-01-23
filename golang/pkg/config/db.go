@@ -16,7 +16,7 @@ func Connect() *gorm.DB {
 	}
 
 	// Migrate the schema
-	db.AutoMigrate(&models.Book{}, &models.BorrowBook{}) // Book and BorrowBook tables in databases
+	db.AutoMigrate(&models.Book{}, &models.BorrowBook{}) // books and borrow_books tables in databases
 
 	return db
 }

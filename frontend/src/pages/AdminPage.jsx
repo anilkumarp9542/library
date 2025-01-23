@@ -29,11 +29,11 @@ const AdminPage = () => {
     try {
       const response = await getAllBooks({ page, limit, search });
       if (page === 1) {
-        setBooks(response.data.books);
+        setBooks(response.data.books);//replaces books with limit iin first page
       } else {
-        setBooks((prevBooks) => [...prevBooks, ...response.data.books]);
+        setBooks((prevBooks) => [...prevBooks, ...response.data.books]); // add additional books to existing books
       }
-      setTotalRecords(response.data.total);
+      setTotalRecords(response.data.total);//count total records fetched from api
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to fetch books');
     }

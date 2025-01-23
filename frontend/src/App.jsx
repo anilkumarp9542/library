@@ -67,13 +67,12 @@ const App = () => {
       }
     };
 
-    initializeAuth();
+    initializeAuth();//called when auth.loginStatus changed
   }, [auth.loginStatus]);
 
   const handleLogout = () => {
     setAuth({ isAuthenticated: false, role: null, username: '', loginStatus: false });
     localStorage.removeItem('auth');
-    document.cookie = 'jwt=; Max-Age=0';
   };
 
   const ConditionalHeader = () => {

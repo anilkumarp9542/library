@@ -13,7 +13,7 @@ const CreateBook = ({ fetchBooks }) => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  // const [errorMessage, setErrorMessage] = useState('');
   const [open, setOpen] = useState(false); // Dialog open state
 
   // Handle form field changes
@@ -27,7 +27,7 @@ const CreateBook = ({ fetchBooks }) => {
     e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
-    setErrorMessage('');
+    // setErrorMessage('');
 
     try {
       const formattedData = {
@@ -51,7 +51,7 @@ const CreateBook = ({ fetchBooks }) => {
       });
 
       setOpen(false); // Close the dialog after successful submission
-      if (fetchBooks) fetchBooks(); // Refresh the book list if fetchBooks function is passed
+      if (fetchBooks) fetchBooks(); // Refresh the book list 
     } catch (error) {
       const errorResponse = error.response?.data?.errors || 'Failed to create book';
       setErrorMessage(Array.isArray(errorResponse) ? errorResponse.join(', ') : errorResponse);
@@ -78,9 +78,9 @@ const CreateBook = ({ fetchBooks }) => {
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>Create New Book</DialogTitle>
         <DialogContent>
-          {errorMessage && (
+          {/* {errorMessage && (
             <p style={{ color: 'red', fontSize: '14px', marginBottom: '16px' }}>{errorMessage}</p>
-          )}
+          )} */}
           <form onSubmit={handleSubmit}>
             <TextField
               label="Book ID"

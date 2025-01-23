@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::API
   include ActionController::Cookies
-  SECRET_KEY = Rails.application.secret_key_base || ENV['SECRET_KEY_BASE'] || 'fallback_key_for_development'
+  SECRET_KEY = Rails.application.secret_key_base  || 'fallback_key_for_development'
 
 
   before_action :initialize_log_entry, only: [:signup, :login, :logout]
@@ -11,7 +11,7 @@ class ApplicationController < ActionController::API
   def initialize_log_entry
     @request_time = Time.current
     @request_id = SecureRandom.uuid
-    @ip_address = request.remote_ip
+    # @ip_address = request.remote_ip
 
     # Default values for username and email
     username = "N/A"
@@ -47,7 +47,7 @@ class ApplicationController < ActionController::API
     @log_entry = Log.create!(
       request_id: @request_id,
       action_type: action_name,
-      ip_address: @ip_address,
+      # ip_address: @ip_address,
       request_body: request.raw_post.presence || '{}',
       request_time: @request_time,
       username: username,
@@ -86,16 +86,17 @@ class ApplicationController < ActionController::API
   end
 
 
-  def handle_options
-    head :ok
-  end
+  # #responsible for handling preflight requests and acts as entry point for CORS preflight request
+  # def handle_options
+  #   head :ok # server responds with 200 (ok) indicating preflight passed 
+  # end
 
-  private
+  # private
 
-  def set_cors_headers
-    headers['Access-Control-Allow-Origin'] = request.headers['Origin'] || '*'
-    headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-    headers['Access-Control-Allow-Headers'] = 'Origin, Content-Type, Accept, Authorization'
-    headers['Access-Control-Max-Age'] = '3600'
-  end
+  # def set_cors_headers
+  #   headers['Access-Control-Allow-Origin'] = request.headers['Origin'] || '*' # allows origin based on request if not origin provides default to *(means allowing any origin )
+  #   headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS' #http methods that this server permits
+  #   headers['Access-Control-Allow-Headers'] = 'Origin, Content-Type, Accept, Authorization'#headers that client can inlcude in it requests
+  #   headers['Access-Control-Max-Age'] = '3600' # the preflight response is cached for 3600 seconds , reduces repeated pre flight checks
+  # end
 end
