@@ -64,7 +64,7 @@ const CreateBook = ({ fetchBooks }) => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
-    setErrorMessage(''); // Clear errors on close
+    setErrorMessage(''); 
   };
 
   return (
@@ -78,9 +78,6 @@ const CreateBook = ({ fetchBooks }) => {
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>Create New Book</DialogTitle>
         <DialogContent>
-          {/* {errorMessage && (
-            <p style={{ color: 'red', fontSize: '14px', marginBottom: '16px' }}>{errorMessage}</p>
-          )} */}
           <form onSubmit={handleSubmit}>
             <TextField
               label="Book ID"
